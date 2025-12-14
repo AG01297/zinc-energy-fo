@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>锌能源 服务器论坛</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 全局样式重置与基础配置 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Microsoft Yahei', Arial, sans-serif;
+        }
+
+        :root {
+            /* 亮色主题变量 */
+            --primary-color: #165DFF;
+            --primary-light: #4080FF;
+            --primary-dark: #0E42C7;
+            --text-main: #333;
+            --text-secondary: #666;
+            --text-placeholder: #999;
+            --bg-main: #F5F7FA;
+            --bg-card: #FFFFFF;
+            --border-light: #E5E6EB;
+            --border-dark: #D0D3D9;
+            --success-color: #00B42A;
+            --error-color: #F53F3F;
+            --warning-color: #FF7D00;
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        /* 暗色主题变量 */
+        :root.dark-mode {
+            --primary-color: #4080FF;
+            --primary-light: #69A1FF;
+            --primary-dark: #2766E6;
+            --text-main: #E5E6EB;
+            --text-secondary: #AAB0B6;
+            --text-placeholder: #868A90;
+            --bg-main: #1D1E20;
+            --bg-card: #2D2E30;
+            --border-light: #3D3E40;
+            --border-dark: #4D4E50;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.6;
+            transition: var(--transition);
+        }
+
+        /* 头部样式 */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        header h1 i {
+            font-size: 20px;
+        }
+
+        .server-ip {
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 4px 12px;
+            border-radius: var(--radius-sm);
+            margin-right: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            z-index: 1000;
+            cursor: pointer; /* 增加鼠标指针样式 */
+            transition: var(--transition);
+        }
+
+        /* 新增：IP hover 效果 */
+        .server-ip:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        /* 新增：复制成功提示样式 */
+        .copy-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--success-color);
+            color: white;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            transform: translateX(-50%) translateY(-20px);
+        }
+
+        .copy-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        header #user-info {
+            font-size: 14px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: var(--radius-sm);
+            margin-right: 8px;
+            z-index: 1000;
+        }
+
+        /* 按钮样式优化 */
+        #logout-btn, #reset-btn, #login-btn, #theme-toggle {
+            font-size: 12px;
+            padding: 6px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-left: 8px;
+            border-radius: var(--radius-sm);
+            color: white;
+            cursor: pointer;
+            z-index: 1001;
+            transition: var(--transition);
+            pointer-events: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        #logout-btn {
+            background: rgba(245, 63, 63, 0.2);
+        }
+        #logout-btn:hover {
+            background: rgba(245, 63, 63, 0.4);
+        }
+
+        #reset-btn {
+            background: rgba(255, 125, 0, 0.2);
+        }
+        #reset-btn:hover {
+            background: rgba(255, 125, 0, 0.4);
+        }
+
+        #login-btn {
+            background: rgba(0, 180, 42, 0.2);
+        }
+        #login-btn:hover {
+            background: rgba(0, 180, 42, 0.4);
+        }
+
+        #theme-toggle {
+            background: rgba(22, 93, 255, 0.2);
+        }
+        #theme-toggle:hover {
+            background: rgba(22, 93, 255, 0.4);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            position: relative;
+        }
+
+        /* 导航栏样式 */
+        .top-menu {
+            background-color: var(--bg-card);
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            z-index: 998;
+        }
+
+        .menu-links {
+            display: flex;
+        }
+
+        .menu-links a {
+            color: var(--text-secondary);
+            padding: 16px 20px;
+            text-decoration: none;
+            transition: var(--transition);
+            font-size: 14px;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .menu-links a:hover {
+            color: var(--primary-color);
+            background-color: rgba(22, 93, 255, 0.05);
+        }
+
+        .menu-links a.active {
+            color: var(--primary-color);
+        }
+
+        .menu-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-color);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .auth-button-container {
+            margin-left: auto;
+            display: flex;
+            gap: 8px;
+        }
+
+        /* 主内容区 */
+        .content {
+            padding: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .content h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .content h2 i {
+            font-size: 16px;
+        }
+
+        /* 表单通用样式 */
+        form {
+            margin-top: 20px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        textarea,
+        input[type="file"] {
+            width: 100%;
+            padding: 10px 12px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            transition: var(--transition);
+            background-color: var(--bg-card);
+            color: var(--text-main);
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            line-height: 1.5;
+        }
+
+        ::placeholder {
+            color: var(--text-placeholder);
+            font-size: 14px;
+        }
+
+        /* 按钮通用样式 */
+        .btn {
+            padding: 10px 18px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-light);
+        }
+
+        .btn:active {
+            background-color: var(--primary-dark);
+        }
+
+        .btn:disabled {
+            background-color: var(--border-light);
+            color: var(--text-placeholder);
+            cursor: not-allowed;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-danger {
+            background-color: var(--error-color);
+        }
+        .btn-danger:hover {
+            background-color: #E03535;
+        }
+
+        /* 消息面板样式 */
+        .message-board {
+            margin-top: 20px;
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .message-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-light);
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .message-item:hover {
+            background-color: rgba(22, 93, 255, 0.03);
+            padding-left: 20px;
+        }
+
+        .message-item:last-child {
+            border-bottom: none;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-meta {
+            font-size: 12px;
+            color: var(--text-placeholder);
+            margin-bottom: 4px;
+        }
+
+        .message-actions {
+            margin-left: 16px;
+        }
+
+        /* 错误/成功提示 - 优化动画 */
+        .error-message {
+            color: var(--error-color);
+            font-size: 12px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            opacity: 0;
+            transform: translateY(5px);
+            transition: all 0.3s ease;
+            height: 16px;
+        }
+
+        .error-message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .success-tip {
+            color: var(--success-color);
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+            padding: 8px 12px;
+            background-color: rgba(0, 180, 42, 0.08);
+            border-radius: var(--radius-sm);
+            border-left: 3px solid var(--success-color);
+            animation: fadeInOut 3s ease;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(10px); }
+            20% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(10px); }
+        }
+
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding-top: 80px;
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-content {
+            background-color: var(--bg-card);
+            margin: 0 auto;
+            padding: 24px;
+            border: 1px solid var(--border-light);
+            width: 90%;
+            max-width: 420px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-content h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary-dark);
+            text-align: center;
+        }
+
+        .close {
+            color: var(--text-placeholder);
+            float: right;
+            font-size: 20px;
+            font-weight: bold;
+            transition: var(--transition);
+        }
+
+        .close:hover,
+        .close:focus {
+            color: var(--error-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* 文件列表样式 */
+        .file-list {
+            margin-top: 20px;
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .file-list h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+            transition: var(--transition);
+        }
+
+        .file-item:hover {
+            background-color: rgba(22, 93, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .file-info {
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        .file-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-meta {
+            font-size: 12px;
+            color: var(--text-placeholder);
+            margin-top: 4px;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .download-btn {
+            padding: 6px 12px;
+            background-color: var(--primary-light);
+            font-size: 12px;
+        }
+
+        .upload-area {
+            margin-top: 10px;
+            padding: 16px;
+            background-color: rgba(22, 93, 255, 0.05);
+            border: 1px dashed var(--primary-light);
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+        }
+
+        .upload-area:hover {
+            background-color: rgba(22, 93, 255, 0.08);
+        }
+
+        .upload-area p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .upload-limit {
+            font-size: 12px;
+            color: var(--text-placeholder);
+            margin-top: 8px;
+        }
+
+        /* 分页样式 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .page-btn {
+            padding: 6px 12px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .page-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 数据备份区域 */
+        .backup-area {
+            margin-top: 20px;
+            padding: 16px;
+            background-color: rgba(0, 180, 42, 0.05);
+            border: 1px solid var(--success-color);
+            border-radius: var(--radius-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .backup-info {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            header {
+                padding: 12px 16px;
+            }
+
+            header h1 {
+                font-size: 18px;
+            }
+
+            .server-ip {
+                font-size: 12px;
+                padding: 3px 8px;
+                margin-right: 8px;
+            }
+
+            header #user-info {
+                font-size: 12px;
+                padding: 3px 8px;
+                margin-right: 4px;
+            }
+
+            #logout-btn, #reset-btn, #login-btn, #theme-toggle {
+                font-size: 10px;
+                padding: 4px 8px;
+                margin-left: 4px;
+            }
+
+            .top-menu {
+                padding: 0 16px;
+            }
+
+            .menu-links a {
+                padding: 16px 12px;
+                font-size: 13px;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .message-board, .file-list {
+                padding: 16px;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
+
+            .file-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .file-actions {
+                margin-top: 12px;
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-right {
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 4px;
+            }
+            .server-ip {
+                margin-right: 0;
+            }
+            header #user-info {
+                margin-right: 0;
+            }
+            #logout-btn, #reset-btn, #login-btn, #theme-toggle {
+                margin-left: 0;
+                align-self: flex-end;
+            }
+
+            .auth-button-container {
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><i class="fas fa-server"></i> 锌能源</h1>
+        <div class="header-right">
+            <div class="server-ip"><i class="fas fa-globe"></i> zincserver.cn</div>
+            <p id="user-info"></p>
+            <button id="login-btn"><i class="fas fa-sign-in-alt"></i> 登录</button>
+            <button id="register-btn"><i class="fas fa-user-plus"></i> 注册</button>
+            <button id="logout-btn" style="display: none;"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
+            <button id="reset-btn" style="display: none;"><i class="fas fa-undo"></i> 重置数据</button>
+            <button id="theme-toggle"><i class="fas fa-moon"></i> 暗色模式</button>
+        </div>
+    </header>
+    <div class="top-menu">
+        <div class="menu-links">
+            <a href="#" id="official-messages" class="active"><i class="fas fa-bullhorn"></i> 官方消息</a>
+            <a href="#" id="player-discussion"><i class="fas fa-comments"></i> 玩家讨论</a>
+            <a href="#" id="shared-blueprints"><i class="fas fa-share-alt-square"></i> 共享蓝图</a>
+        </div>
+    </div>
+    <div class="content">
+        <!-- 官方消息板块 -->
+        <div id="official-messages-section" style="display:block;">
+            <h2><i class="fas fa-bullhorn"></i> 官方消息</h2>
+            <div class="message-board" id="official-messages-board"></div>
+            <div class="pagination" id="official-pagination"></div>
+            <form id="send-message-form-official" style="display:none; margin-top:20px;">
+                <textarea placeholder="输入官方消息内容..." id="message-input-official"></textarea>
+                <div style="margin-top:10px;">
+                    <label for="admin-key" style="font-size:14px; color:var(--text-secondary);">管理员密钥：</label>
+                    <input type="password" id="admin-key" placeholder="输入管理员密钥">
+                    <div id="admin-key-error" class="error-message"><i class="fas fa-exclamation-circle"></i></div>
+                </div>
+                <button type="submit" class="btn" style="margin-top:10px;"><i class="fas fa-paper-plane"></i> 发送消息</button>
+            </form>
+        </div>
+
+        <!-- 玩家讨论板块 -->
+        <div id="player-discussion-section" style="display:none;">
+            <h2><i class="fas fa-comments"></i> 玩家讨论</h2>
+            <div class="message-board" id="player-discussion-board"></div>
+            <div class="pagination" id="player-pagination"></div>
+            <form id="send-message-form-player" style="display:none; margin-top:20px;">
+                <textarea placeholder="分享你的想法和经验..." id="message-input-player"></textarea>
+                <button type="submit" class="btn"><i class="fas fa-paper-plane"></i> 发送消息</button>
+                <div class="success-tip" id="player-message-tip"><i class="fas fa-check-circle"></i> 消息发送成功！</div>
+            </form>
+        </div>
+
+        <!-- 共享蓝图板块 -->
+        <div id="shared-blueprints-section" style="display:none;">
+            <h2><i class="fas fa-share-alt-square"></i> 共享蓝图</h2>
+            <div class="upload-area">
+                <p><i class="fas fa-info-circle"></i> 在这里上传你的NBT格式蓝图文件，与服务器玩家共享（所有用户均可下载）：</p>
+                <input type="file" accept=".nbt" id="nbt-file-upload" />
+                <div class="upload-limit"><i class="fas fa-exclamation-circle"></i> 温馨提示：文件大小限制1MB以内</div>
+                <div class="success-tip" id="upload-tip"><i class="fas fa-check-circle"></i> 文件上传成功！所有用户均可下载</div>
+            </div>
+            <div class="file-list" id="file-list">
+                <h3><i class="fas fa-folder-open"></i> 共享蓝图文件列表</h3>
+                <div id="uploaded-files-container"></div>
+                <div class="pagination" id="file-pagination"></div>
+            </div>
+
+            <!-- 数据备份区域 -->
+            <div class="backup-area">
+                <div class="backup-info">
+                    <i class="fas fa-shield-alt"></i> 数据备份/恢复（本地存储，仅当前设备可用）
+                </div>
+                <div>
+                    <button id="export-data" class="btn btn-sm"><i class="fas fa-download"></i> 导出数据</button>
+                    <input type="file" id="import-data" accept=".json" style="display:none;" />
+                    <label for="import-data" class="btn btn-sm btn-danger"><i class="fas fa-upload"></i> 导入数据</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 注册弹窗 -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3><i class="fas fa-user-plus"></i> 用户注册</h3>
+            <form id="register-form">
+                <label for="reg-username" style="font-size:14px; color:var(--text-secondary);">游戏ID:</label>
+                <input type="text" id="reg-username" required placeholder="请输入你的游戏ID">
+                <div id="reg-username-error" class="error-message"><i class="fas fa-exclamation-circle"></i></div>
+                
+                <label for="reg-email" style="font-size:14px; color:var(--text-secondary);">邮箱地址:</label>
+                <input type="email" id="reg-email" required placeholder="请输入你的邮箱">
+                <div id="reg-email-error" class="error-message"><i class="fas fa-exclamation-circle"></i></div>
+                
+                <label for="reg-password" style="font-size:14px; color:var(--text-secondary);">密码:</label>
+                <input type="password" id="reg-password" required placeholder="密码长度不少于6位">
+                <div id="reg-password-error" class="error-message"><i class="fas fa-exclamation-circle"></i></div>
+                
+                <label for="reg-confirm-password" style="font-size:14px; color:var(--text-secondary);">确认密码:</label>
+                <input type="password" id="reg-confirm-password" required placeholder="请再次输入密码">
+                <div id="reg-confirm-password-error" class="error-message"><i class="fas fa-exclamation-circle"></i></div>
+                
+                <div style="margin-top:20px; text-align:center;">
+                    <button type="submit" class="btn"><i class="fas fa-check"></i> 完成注册</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 登录弹窗 -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3><i class="fas fa-sign-in-alt"></i> 用户登录</h3>
+            <form id="login-form">
+                <label for="login-username" style="font-size:14px; color:var(--text-secondary);">游戏ID:</label>
+                <input type="text" id="login-username" required placeholder="请输入你的游戏ID">
+                <div id="login-username-error" class="error-message"><i class="fas fa-exclamation-circle"></i></div>
+                
+                <label for="login-password" style="font-size:14px; color:var(--text-secondary);">密码:</label>
+                <input type="password" id="login-password" required placeholder="请输入你的密码">
+                <div id="login-password-error" class="error-message"><i class="fas fa-exclamation-circle"></i></div>
+                
+                <div style="margin-top:20px; text-align:center;">
+                    <button type="submit" class="btn"><i class="fas fa-sign-in-alt"></i> 登录</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 新增：复制成功提示框 -->
+    <div class="copy-toast" id="copyToast">
+        <i class="fas fa-check-circle"></i> IP已复制到剪贴板！
+    </div>
+
+    <script>
+        // 调试开关
+        const DEBUG = true;
+        function log(msg) {
+            if (DEBUG) console.log('[锌能源论坛]', msg);
+        }
+
+        // 常量配置
+        const CONFIG = {
+            ADMIN_KEY: 'zinc_energy_admin_2024', // 管理员密钥（可修改）
+            FILE_MAX_SIZE: 1 * 1024 * 1024, // 1MB 文件大小限制
+            PAGE_SIZE: 10, // 每页显示数量
+            ENCRYPT_SALT: 'zinc_energy_salt_165dff', // 密码加密盐值
+            SERVER_IP: 'zincserver.cn' // 服务器IP常量
+        };
+
+        // DOM元素缓存（避免重复查询）
+        const DOM = {
+            // 新增：IP元素和复制提示
+            serverIp: document.querySelector('.server-ip'),
+            copyToast: document.getElementById('copyToast'),
+            
+            // 弹窗相关
+            registerModal: document.getElementById('registerModal'),
+            loginModal: document.getElementById('loginModal'),
+            closeBtns: document.querySelectorAll('.close'),
+            
+            // 按钮相关
+            registerBtn: document.getElementById('register-btn'),
+            loginBtn: document.getElementById('login-btn'),
+            logoutBtn: document.getElementById('logout-btn'),
+            resetBtn: document.getElementById('reset-btn'),
+            themeToggle: document.getElementById('theme-toggle'),
+            exportDataBtn: document.getElementById('export-data'),
+            importDataBtn: document.getElementById('import-data'),
+            
+            // 表单相关
+            registerForm: document.getElementById('register-form'),
+            loginForm: document.getElementById('login-form'),
+            officialMsgForm: document.getElementById('send-message-form-official'),
+            playerMsgForm: document.getElementById('send-message-form-player'),
+            
+            // 内容区域
+            officialMsgBoard: document.getElementById('official-messages-board'),
+            playerMsgBoard: document.getElementById('player-discussion-board'),
+            uploadedFilesContainer: document.getElementById('uploaded-files-container'),
+            
+            // 分页区域
+            officialPagination: document.getElementById('official-pagination'),
+            playerPagination: document.getElementById('player-pagination'),
+            filePagination: document.getElementById('file-pagination'),
+            
+            // 其他
+            userInfo: document.getElementById('user-info'),
+            nbtFileUpload: document.getElementById('nbt-file-upload'),
+            uploadTip: document.getElementById('upload-tip'),
+            playerMsgTip: document.getElementById('player-message-tip'),
+            adminKeyInput: document.getElementById('admin-key'),
+            adminKeyError: document.getElementById('admin-key-error')
+        };
+
+        // 数据存储（初始化）
+        let DATA = {
+            userData: JSON.parse(localStorage.getItem('zincEnergyUserData') || '{}'), // 用户数据（含密码）
+            currentUser: localStorage.getItem('zincEnergyCurrentUser') || null, // 当前登录用户
+            officialMessages: JSON.parse(localStorage.getItem('zincEnergyOfficialMessages') || '[]'),
+            playerMessages: JSON.parse(localStorage.getItem('zincEnergyPlayerMessages') || '[]'),
+            uploadedFiles: JSON.parse(localStorage.getItem('zincEnergyUploadedFiles') || '[]'),
+            theme: localStorage.getItem('zincEnergyTheme') || 'light' // 主题模式
+        };
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            log('DOM加载完成，开始初始化');
+            
+            // 初始化主题
+            initTheme();
+            
+            // 初始化用户状态
+            initUserState();
+            
+            // 初始化内容（消息、文件）
+            renderOfficialMessages(1);
+            renderPlayerMessages(1);
+            renderFiles(1);
+            
+            // 绑定事件
+            bindEvents();
+            
+            log('初始化完成');
+        });
+
+        // 主题切换初始化
+        function initTheme() {
+            if (DATA.theme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+                DOM.themeToggle.innerHTML = '<i class="fas fa-sun"></i> 亮色模式';
+            } else {
+                document.documentElement.classList.remove('dark-mode');
+                DOM.themeToggle.innerHTML = '<i class="fas fa-moon"></i> 暗色模式';
+            }
+        }
+
+        // 用户状态初始化
+        function initUserState() {
+            log('更新用户状态：', DATA.currentUser);
+            if (DATA.currentUser) {
+                // 已登录
+                DOM.userInfo.textContent = `当前登录：${DATA.currentUser}`;
+                DOM.registerBtn.style.display = 'none';
+                DOM.loginBtn.style.display = 'none';
+                DOM.logoutBtn.style.display = 'inline-flex';
+                DOM.resetBtn.style.display = 'inline-flex';
+            } else {
+                // 未登录
+                DOM.userInfo.textContent = '';
+                DOM.registerBtn.style.display = 'inline-flex';
+                DOM.loginBtn.style.display = 'inline-flex';
+                DOM.logoutBtn.style.display = 'none';
+                DOM.resetBtn.style.display = 'none';
+            }
+            // 更新表单可见性
+            updateFormVisibility(document.querySelector('.menu-links a.active').id + '-section');
+        }
+
+        // 绑定所有事件
+        function bindEvents() {
+            // 新增：IP复制事件
+            DOM.serverIp.addEventListener('click', copyServerIp);
+
+            // 弹窗关闭事件
+            DOM.closeBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    DOM.registerModal.style.display = 'none';
+                    DOM.loginModal.style.display = 'none';
+                });
+            });
+
+            // 点击空白处关闭弹窗
+            window.addEventListener('click', function(e) {
+                if (e.target === DOM.registerModal) DOM.registerModal.style.display = 'none';
+                if (e.target === DOM.loginModal) DOM.loginModal.style.display = 'none';
+            });
+
+            // 注册/登录按钮事件
+            DOM.registerBtn.addEventListener('click', () => {
+                DOM.registerModal.style.display = 'block';
+                clearFormErrors('register');
+            });
+            DOM.loginBtn.addEventListener('click', () => {
+                DOM.loginModal.style.display = 'block';
+                clearFormErrors('login');
+            });
+
+            // 主题切换事件
+            DOM.themeToggle.addEventListener('click', function() {
+                if (DATA.theme === 'light') {
+                    DATA.theme = 'dark';
+                    document.documentElement.classList.add('dark-mode');
+                    this.innerHTML = '<i class="fas fa-sun"></i> 亮色模式';
+                } else {
+                    DATA.theme = 'light';
+                    document.documentElement.classList.remove('dark-mode');
+                    this.innerHTML = '<i class="fas fa-moon"></i> 暗色模式';
+                }
+                localStorage.setItem('zincEnergyTheme', DATA.theme);
+            });
+
+            // 注册表单提交
+            DOM.registerForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                clearFormErrors('register');
+                
+                const username = document.getElementById('reg-username').value.trim();
+                const email = document.getElementById('reg-email').value.trim();
+                const password = document.getElementById('reg-password').value;
+                const confirmPassword = document.getElementById('reg-confirm-password').value;
+                
+                let isValid = true;
+                
+                // 验证逻辑
+                if (!username) {
+                    showError('reg-username-error', '请填写游戏ID');
+                    isValid = false;
+                } else if (DATA.userData[username]) {
+                    showError('reg-username-error', '该游戏ID已被注册');
+                    isValid = false;
+                }
+                
+                if (!email) {
+                    showError('reg-email-error', '请填写邮箱');
+                    isValid = false;
+                } else if (!/^[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/.test(email)) {
+                    showError('reg-email-error', '邮箱格式不正确');
+                    isValid = false;
+                }
+                
+                if (!password || password.length < 6) {
+                    showError('reg-password-error', '密码长度不能少于6位');
+                    isValid = false;
+                }
+                
+                if (password !== confirmPassword) {
+                    showError('reg-confirm-password-error', '两次密码不一致');
+                    isValid = false;
+                }
+
+                if (!isValid) return;
+
+                // 密码加密存储
+                DATA.userData[username] = {
+                    email: email,
+                    password: encryptPassword(password),
+                    registerTime: new Date().getTime()
+                };
+                
+                // 保存数据
+                localStorage.setItem('zincEnergyUserData', JSON.stringify(DATA.userData));
+                DATA.currentUser = username;
+                localStorage.setItem('zincEnergyCurrentUser', username);
+                
+                // 关闭弹窗并更新状态
+                DOM.registerModal.style.display = 'none';
+                alert('注册成功！已自动登录');
+                initUserState();
+                log('用户注册成功：', username);
+            });
+
+            // 登录表单提交
+            DOM.loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                clearFormErrors('login');
+                
+                const username = document.getElementById('login-username').value.trim();
+                const password = document.getElementById('login-password').value;
+                
+                let isValid = true;
+                
+                if (!username) {
+                    showError('login-username-error', '请填写游戏ID');
+                    isValid = false;
+                }
+                
+                if (!password) {
+                    showError('login-password-error', '请填写密码');
+                    isValid = false;
+                }
+
+                if (!isValid) return;
+
+                // 验证用户和密码
+                const user = DATA.userData[username];
+                if (!user) {
+                    showError('login-username-error', '该用户未注册');
+                    return;
+                }
+                
+                if (user.password !== encryptPassword(password)) {
+                    showError('login-password-error', '密码错误');
+                    return;
+                }
+
+                // 登录成功
+                DATA.currentUser = username;
+                localStorage.setItem('zincEnergyCurrentUser', username);
+                
+                DOM.loginModal.style.display = 'none';
+                alert('登录成功！');
+                initUserState();
+                log('用户登录成功：', username);
+            });
+
+            // 退出登录
+            DOM.logoutBtn.addEventListener('click', function() {
+                if (!confirm('确定要退出登录吗？')) return;
+                
+                DATA.currentUser = null;
+                localStorage.removeItem('zincEnergyCurrentUser');
+                initUserState();
+                alert('已成功退出登录！');
+                log('用户退出登录');
+            });
+
+            // 重置数据
+            DOM.resetBtn.addEventListener('click', function() {
+                if (!confirm('⚠️ 警告！此操作将清空所有数据（用户、消息、文件），且无法恢复！确定重置？')) return;
+                if (!confirm('🔴 最终确认！点击确定后所有数据将被永久删除！确定？')) return;
+                
+                // 清空所有存储
+                localStorage.removeItem('zincEnergyUserData');
+                localStorage.removeItem('zincEnergyCurrentUser');
+                localStorage.removeItem('zincEnergyOfficialMessages');
+                localStorage.removeItem('zincEnergyPlayerMessages');
+                localStorage.removeItem('zincEnergyUploadedFiles');
+                
+                // 重置数据
+                DATA = {
+                    userData: {},
+                    currentUser: null,
+                    officialMessages: [],
+                    playerMessages: [],
+                    uploadedFiles: [],
+                    theme: DATA.theme
+                };
+                
+                // 更新界面
+                initUserState();
+                renderOfficialMessages(1);
+                renderPlayerMessages(1);
+                renderFiles(1);
+                alert('✅ 所有数据已重置！');
+                log('所有数据已重置');
+            });
+
+            // 官方消息发送
+            DOM.officialMsgForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (!DATA.currentUser) {
+                    alert('请先登录！');
+                    return;
+                }
+                
+                const adminKey = DOM.adminKeyInput.value.trim();
+                const msgContent = document.getElementById('message-input-official').value.trim();
+                
+                if (!adminKey) {
+                    showError('admin-key-error', '请输入管理员密钥');
+                    return;
+                }
+                
+                if (adminKey !== CONFIG.ADMIN_KEY) {
+                    showError('admin-key-error', '管理员密钥错误');
+                    return;
+                }
+                
+                if (!msgContent) {
+                    alert('消息内容不能为空！');
+                    return;
+                }
+                
+                // 新增消息（带时间戳）
+                const newMsg = {
+                    content: msgContent,
+                    author: DATA.currentUser,
+                    timestamp: new Date().getTime(),
+                    id: generateId()
+                };
+                
+                DATA.officialMessages.unshift(newMsg);
+                saveData('officialMessages');
+                renderOfficialMessages(1);
+                
+                // 清空输入
+                document.getElementById('message-input-official').value = '';
+                DOM.adminKeyInput.value = '';
+                DOM.adminKeyError.classList.remove('show');
+                log('官方消息发送成功：', newMsg);
+            });
+
+            // 玩家消息发送
+            DOM.playerMsgForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                if (!DATA.currentUser) {
+                    alert('请先登录！');
+                    return;
+                }
+                
+                const msgContent = document.getElementById('message-input-player').value.trim();
+                if (!msgContent) {
+                    alert('消息内容不能为空！');
+                    return;
+                }
+                
+                // 新增消息（带时间戳）
+                const newMsg = {
+                    content: msgContent,
+                    author: DATA.currentUser,
+                    timestamp: new Date().getTime(),
+                    id: generateId()
+                };
+                
+                DATA.playerMessages.unshift(newMsg);
+                saveData('playerMessages');
+                renderPlayerMessages(1);
+                
+                // 清空输入并显示提示
+                document.getElementById('message-input-player').value = '';
+                DOM.playerMsgTip.style.display = 'block';
+                setTimeout(() => { DOM.playerMsgTip.style.display = 'none'; }, 3000);
+                log('玩家消息发送成功：', newMsg);
+            });
+
+            // 文件上传
+            DOM.nbtFileUpload.addEventListener('change', debounce(function() {
+                if (!DATA.currentUser) {
+                    alert('请先登录后上传文件！');
+                    this.value = '';
+                    return;
+                }
+                
+                const file = this.files[0];
+                if (!file) return;
+                
+                // 验证文件大小
+                if (file.size > CONFIG.FILE_MAX_SIZE) {
+                    alert(`文件过大！请上传1MB以内的文件（当前文件：${(file.size/1024/1024).toFixed(2)}MB）`);
+                    this.value = '';
+                    return;
+                }
+                
+                // 读取文件并存储
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const fileInfo = {
+                        fileName: file.name,
+                        fileSize: file.size,
+                        fileData: e.target.result.split(',')[1],
+                        uploader: DATA.currentUser,
+                        timestamp: new Date().getTime(),
+                        id: generateId()
+                    };
+                    
+                    DATA.uploadedFiles.unshift(fileInfo);
+                    saveData('uploadedFiles');
+                    renderFiles(1);
+                    
+                    DOM.uploadTip.style.display = 'block';
+                    setTimeout(() => { DOM.uploadTip.style.display = 'none'; }, 3000);
+                    log('文件上传成功：', fileInfo.fileName);
+                };
+                reader.readAsDataURL(file);
+                this.value = '';
+            }, 500));
+
+            // 数据导出
+            DOM.exportDataBtn.addEventListener('click', function() {
+                const exportData = {
+                    userData: DATA.userData,
+                    officialMessages: DATA.officialMessages,
+                    playerMessages: DATA.playerMessages,
+                    uploadedFiles: DATA.uploadedFiles
+                };
+                
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `锌能源论坛数据备份_${formatTime(new Date().getTime())}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                log('数据导出成功');
+            });
+
+            // 数据导入
+            DOM.importDataBtn.addEventListener('change', function() {
+                const file = this.files[0];
+                if (!file) return;
+                
+                if (!confirm('⚠️ 导入数据将覆盖当前所有数据，且无法恢复！确定导入？')) {
+                    this.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importData = JSON.parse(e.target.result);
+                        
+                        // 验证数据格式
+                        if (!importData.userData || !importData.officialMessages || !importData.playerMessages || !importData.uploadedFiles) {
+                            throw new Error('数据格式错误');
+                        }
+                        
+                        // 覆盖数据
+                        DATA.userData = importData.userData;
+                        DATA.officialMessages = importData.officialMessages;
+                        DATA.playerMessages = importData.playerMessages;
+                        DATA.uploadedFiles = importData.uploadedFiles;
+                        
+                        // 保存数据
+                        saveData('userData');
+                        saveData('officialMessages');
+                        saveData('playerMessages');
+                        saveData('uploadedFiles');
+                        
+                        // 更新界面
+                        renderOfficialMessages(1);
+                        renderPlayerMessages(1);
+                        renderFiles(1);
+                        
+                        alert('✅ 数据导入成功！');
+                        log('数据导入成功');
+                    } catch (err) {
+                        alert('❌ 数据导入失败：' + err.message);
+                        log('数据导入失败：', err);
+                    }
+                };
+                reader.readAsText(file);
+                this.value = '';
+            });
+
+            // 板块切换
+            document.querySelectorAll('.menu-links a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelectorAll('.menu-links a').forEach(el => el.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 隐藏所有板块
+                    document.querySelectorAll('.content > div[id$="-section"]').forEach(section => {
+                        section.style.display = 'none';
+                    });
+                    
+                    // 显示目标板块
+                    const targetId = this.id + '-section';
+                    document.getElementById(targetId).style.display = 'block';
+                    updateFormVisibility(targetId);
+                });
+            });
+
+            // 输入框实时清除错误
+            document.querySelectorAll('input, textarea').forEach(input => {
+                input.addEventListener('input', function() {
+                    const errorId = this.id + '-error';
+                    const errorEl = document.getElementById(errorId);
+                    if (errorEl) errorEl.classList.remove('show');
+                });
+            });
+        }
+
+        // 新增：复制服务器IP函数
+        function copyServerIp() {
+            try {
+                // 使用剪贴板API复制IP
+                navigator.clipboard.writeText(CONFIG.SERVER_IP).then(() => {
+                    // 显示复制成功提示
+                    showCopyToast();
+                    log(`IP复制成功：${CONFIG.SERVER_IP}`);
+                }).catch(err => {
+                    // 降级方案：创建临时输入框复制
+                    const tempInput = document.createElement('input');
+                    tempInput.value = CONFIG.SERVER_IP;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    showCopyToast();
+                    log(`IP复制成功（降级方案）：${CONFIG.SERVER_IP}`);
+                });
+            } catch (err) {
+                alert('IP复制失败，请手动复制：' + CONFIG.SERVER_IP);
+                log('IP复制失败：', err);
+            }
+        }
+
+        // 新增：显示复制成功提示
+        function showCopyToast() {
+            DOM.copyToast.classList.add('show');
+            setTimeout(() => {
+                DOM.copyToast.classList.remove('show');
+            }, 2000);
+        }
+
+        // 渲染官方消息（带分页）
+        function renderOfficialMessages(page = 1) {
+            const total = DATA.officialMessages.length;
+            const totalPages = Math.ceil(total / CONFIG.PAGE_SIZE);
+            const start = (page - 1) * CONFIG.PAGE_SIZE;
+            const end = start + CONFIG.PAGE_SIZE;
+            const messages = DATA.officialMessages.slice(start, end);
+            
+            // 清空容器
+            DOM.officialMsgBoard.innerHTML = '';
+            
+            if (messages.length === 0) {
+                DOM.officialMsgBoard.innerHTML = `
+                    <div style="text-align:center; padding:30px; color:var(--text-placeholder);">
+                        <i class="fas fa-bullhorn" style="font-size:48px; margin-bottom:12px;"></i>
+                        <p>暂无官方消息</p>
+                    </div>
+                `;
+            } else {
+                messages.forEach(msg => {
+                    const msgItem = document.createElement('div');
+                    msgItem.className = 'message-item';
+                    msgItem.innerHTML = `
+                        <div class="message-content">
+                            <div class="message-meta">
+                                <span>${msg.author} (官方)</span> · <span>${formatTime(msg.timestamp)}</span>
+                            </div>
+                            <div>${msg.content}</div>
+                        </div>
+                        ${DATA.currentUser === msg.author || DATA.currentUser === 'weiqi_wq' ? `
+                            <div class="message-actions">
+                                <button class="btn btn-sm btn-danger delete-msg" data-type="official" data-id="${msg.id}">
+                                    <i class="fas fa-trash"></i> 删除
+                                </button>
+                            </div>
+                        ` : ''}
+                    `;
+                    DOM.officialMsgBoard.appendChild(msgItem);
+                });
+                
+                // 绑定删除事件
+                bindDeleteEvents('official');
+            }
+            
+            // 渲染分页
+            renderPagination(DOM.officialPagination, page, totalPages, renderOfficialMessages);
+        }
+
+        // 渲染玩家消息（带分页）
+        function renderPlayerMessages(page = 1) {
+            const total = DATA.playerMessages.length;
+            const totalPages = Math.ceil(total / CONFIG.PAGE_SIZE);
+            const start = (page - 1) * CONFIG.PAGE_SIZE;
+            const end = start + CONFIG.PAGE_SIZE;
+            const messages = DATA.playerMessages.slice(start, end);
+            
+            // 清空容器
+            DOM.playerMsgBoard.innerHTML = '';
+            
+            if (messages.length === 0) {
+                DOM.playerMsgBoard.innerHTML = `
+                    <div style="text-align:center; padding:30px; color:var(--text-placeholder);">
+                        <i class="fas fa-comments" style="font-size:48px; margin-bottom:12px;"></i>
+                        <p>暂无玩家讨论，快来分享你的想法吧～</p>
+                    </div>
+                `;
+            } else {
+                messages.forEach(msg => {
+                    const msgItem = document.createElement('div');
+                    msgItem.className = 'message-item';
+                    msgItem.innerHTML = `
+                        <div class="message-content">
+                            <div class="message-meta">
+                                <span>${msg.author}</span> · <span>${formatTime(msg.timestamp)}</span>
+                            </div>
+                            <div>${msg.content}</div>
+                        </div>
+                        ${DATA.currentUser === msg.author ? `
+                            <div class="message-actions">
+                                <button class="btn btn-sm btn-danger delete-msg" data-type="player" data-id="${msg.id}">
+                                    <i class="fas fa-trash"></i> 删除
+                                </button>
+                            </div>
+                        ` : ''}
+                    `;
+                    DOM.playerMsgBoard.appendChild(msgItem);
+                });
+                
+                // 绑定删除事件
+                bindDeleteEvents('player');
+            }
+            
+            // 渲染分页
+            renderPagination(DOM.playerPagination, page, totalPages, renderPlayerMessages);
+        }
+
+        // 渲染文件列表（带分页）
+        function renderFiles(page = 1) {
+            const total = DATA.uploadedFiles.length;
+            const totalPages = Math.ceil(total / CONFIG.PAGE_SIZE);
+            const start = (page - 1) * CONFIG.PAGE_SIZE;
+            const end = start + CONFIG.PAGE_SIZE;
+            const files = DATA.uploadedFiles.slice(start, end);
+            
+            // 清空容器
+            DOM.uploadedFilesContainer.innerHTML = '';
+            
+            if (files.length === 0) {
+                DOM.uploadedFilesContainer.innerHTML = `
+                    <div style="text-align:center; padding:30px; color:var(--text-placeholder);">
+                        <i class="fas fa-folder-empty" style="font-size:48px; margin-bottom:12px;"></i>
+                        <p>暂无共享的蓝图文件，快来上传分享吧～</p>
+                    </div>
+                `;
+            } else {
+                files.forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <div class="file-info">
+                            <div class="file-name">
+                                <i class="fas fa-file"></i> ${file.fileName}
+                            </div>
+                            <div class="file-meta">
+                                上传者：${file.uploader} · 上传时间：${formatTime(file.timestamp)} · 大小：${formatFileSize(file.fileSize)}
+                            </div>
+                        </div>
+                        <div class="file-actions">
+                            <button class="btn btn-sm download-btn" data-id="${file.id}">
+                                <i class="fas fa-download"></i> 下载
+                            </button>
+                            ${DATA.currentUser === file.uploader ? `
+                                <button class="btn btn-sm btn-danger delete-file" data-id="${file.id}">
+                                    <i class="fas fa-trash"></i> 删除
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                    DOM.uploadedFilesContainer.appendChild(fileItem);
+                });
+                
+                // 绑定下载和删除事件
+                bindFileEvents();
+            }
+            
+            // 渲染分页
+            renderPagination(DOM.filePagination, page, totalPages, renderFiles);
+        }
+
+        // 渲染分页
+        function renderPagination(container, currentPage, totalPages, callback) {
+            container.innerHTML = '';
+            
+            if (totalPages <= 1) return;
+            
+            // 上一页
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'page-btn';
+            prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+            prevBtn.disabled = currentPage === 1;
+            prevBtn.addEventListener('click', () => callback(currentPage - 1));
+            container.appendChild(prevBtn);
+            
+            // 页码按钮（最多显示5个）
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                pageBtn.textContent = i;
+                pageBtn.addEventListener('click', () => callback(i));
+                container.appendChild(pageBtn);
+            }
+            
+            // 下一页
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'page-btn';
+            nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+            nextBtn.disabled = currentPage === totalPages;
+            nextBtn.addEventListener('click', () => callback(currentPage + 1));
+            container.appendChild(nextBtn);
+        }
+
+        // 绑定消息删除事件
+        function bindDeleteEvents(type) {
+            document.querySelectorAll(`.delete-msg[data-type="${type}"]`).forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    if (!confirm('确定要删除这条消息吗？')) return;
+                    
+                    if (type === 'official') {
+                        DATA.officialMessages = DATA.officialMessages.filter(msg => msg.id !== id);
+                        saveData('officialMessages');
+                        renderOfficialMessages(1);
+                    } else {
+                        DATA.playerMessages = DATA.playerMessages.filter(msg => msg.id !== id);
+                        saveData('playerMessages');
+                        renderPlayerMessages(1);
+                    }
+                    
+                    log(`${type}消息删除成功：`, id);
+                });
+            });
+        }
+
+        // 绑定文件事件（下载/删除）
+        function bindFileEvents() {
+            // 下载事件
+            document.querySelectorAll('.download-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const file = DATA.uploadedFiles.find(f => f.id === id);
+                    if (!file) return;
+                    
+                    // 解码并下载
+                    const byteCharacters = atob(file.fileData);
+                    const byteNumbers = new Array(byteCharacters.length);
+                    for (let i = 0; i < byteCharacters.length; i++) {
+                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    const blob = new Blob([byteArray], { type: 'application/octet-stream' });
+                    
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = URL.createObjectURL(blob);
+                    downloadLink.download = file.fileName;
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                    URL.revokeObjectURL(downloadLink.href);
+                    
+                    log('文件下载：', file.fileName);
+                });
+            });
+            
+            // 删除事件
+            document.querySelectorAll('.delete-file').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    if (!confirm('确定要删除这个文件吗？')) return;
+                    
+                    DATA.uploadedFiles = DATA.uploadedFiles.filter(file => file.id !== id);
+                    saveData('uploadedFiles');
+                    renderFiles(1);
+                    
+                    log('文件删除成功：', id);
+                });
+            });
+        }
+
+        // 更新表单可见性
+        function updateFormVisibility(targetSectionId) {
+            // 隐藏所有表单
+            DOM.officialMsgForm.style.display = 'none';
+            DOM.playerMsgForm.style.display = 'none';
+            
+            if (!DATA.currentUser) return;
+            
+            // 官方消息表单：管理员可见
+            if (targetSectionId === 'official-messages-section' && DATA.currentUser === 'weiqi_wq') {
+                DOM.officialMsgForm.style.display = 'block';
+            }
+            
+            // 玩家讨论表单：所有登录用户可见
+            if (targetSectionId === 'player-discussion-section') {
+                DOM.playerMsgForm.style.display = 'block';
+            }
+        }
+
+        // 显示错误提示
+        function showError(errorId, text) {
+            const errorEl = document.getElementById(errorId);
+            if (errorEl) {
+                errorEl.textContent = text;
+                errorEl.classList.add('show');
+                // 3秒后自动隐藏
+                setTimeout(() => {
+                    errorEl.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        // 清除表单错误
+        function clearFormErrors(formType) {
+            document.querySelectorAll(`#${formType}-form .error-message`).forEach(el => {
+                el.textContent = '';
+                el.classList.remove('show');
+            });
+        }
+
+        // 保存数据到localStorage（防抖）
+        const saveData = debounce(function(key) {
+            localStorage.setItem(`zincEnergy${capitalizeFirstLetter(key)}`, JSON.stringify(DATA[key]));
+            log(`数据保存：${key}`);
+        }, 300);
+
+        // 工具函数：密码加密
+        function encryptPassword(pwd) {
+            // 简单加密（生产环境建议使用CryptoJS等更安全的方式）
+            return btoa(pwd + CONFIG.ENCRYPT_SALT);
+        }
+
+        // 工具函数：生成唯一ID
+        function generateId() {
+            return Date.now() + '-' + Math.floor(Math.random() * 10000);
+        }
+
+        // 工具函数：格式化时间戳
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return `${date.getFullYear()}-${padZero(date.getMonth() + 1)}-${padZero(date.getDate())} ${padZero(date.getHours())}:${padZero(date.getMinutes())}`;
+        }
+
+        // 工具函数：补零
+        function padZero(num) {
+            return num < 10 ? '0' + num : num;
+        }
+
+        // 工具函数：格式化文件大小
+        function formatFileSize(size) {
+            if (size < 1024) return size + 'B';
+            if (size < 1024 * 1024) return (size / 1024).toFixed(1) + 'KB';
+            return (size / 1024 / 1024).toFixed(2) + 'MB';
+        }
+
+        // 工具函数：首字母大写
+        function capitalizeFirstLetter(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        // 工具函数：防抖
+        function debounce(func, delay) {
+            let timer = null;
+            return function(...args) {
+                clearTimeout(timer);
+                timer = setTimeout(() => {
+                    func.apply(this, args);
+                }, delay);
+            };
+        }
+    </script>
+</body>
+</html>
